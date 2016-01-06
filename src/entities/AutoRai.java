@@ -139,6 +139,7 @@ public class AutoRai {
 			}
 		} else {
 			watcherCanEnterBoolean = true;
+			buyerCanEnterBoolean = true; //change hier
 			watcherCanEnter.signal();
 		}
 		
