@@ -18,7 +18,7 @@ public abstract class Person extends Thread {
 			e.printStackTrace();
 		}
 	}
-
+	
 	public String getPersonName() {
 		return name;
 	}

@@ -11,7 +11,7 @@ public class Buyer extends Person {
 	public void run() {
 		super.run();
 		while(true){
-			justLive(100000);
+			justLive(120000);
 			
 			getRai().buyerWantsToBuyACar(getPersonName());
 			System.out.println(getPersonName()+" got in.");
@@ -20,9 +20,11 @@ public class Buyer extends Person {
 			getRai().buyerIsDoneBuying(getPersonName());
 		}
 	}
-	
+	/**
+	 * simulates the time it costs to buy a car.
+	 */
 	public void buyingACar(){
-		int ms = (int) (Math.random() * 10000);
+		int ms = (int) (Math.random() * 7500);
 		try {
 			Thread.sleep(ms);
 		} catch (InterruptedException e) {

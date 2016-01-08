@@ -22,9 +22,11 @@ public class Watcher extends Person {
 		
 		
 	}
-	
+	/**
+	 * simulates the time it costs to watch cars
+	 */
 	public void watchingBeautifullCars(){
-		int ms = (int)( Math.random() * 2000);
+		int ms = (int)( Math.random() * 3500);
 		try {
 			Thread.sleep(ms);
 		} catch (InterruptedException e) {
