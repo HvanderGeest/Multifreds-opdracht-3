@@ -7,14 +7,14 @@ import java.util.concurrent.locks.ReentrantLock;
 public class AutoRai {
 	private final int PLACE_IN_SHOWROOM = 10;
 	private Lock lock;
-	private Condition watcherCanEnter, buyerCanEnter, prioritiequeue;
+	private Condition watcherCanEnter, buyerCanEnter, priorityQueue;
 	private int numberOfBuyersInArow = 0;
 	private int numberOfWatchersInRoom = 0;
 	private int buyersWaiting = 0;
-	private int numberOfWatchersInPrioritieQueue = 0;
+	private int numberOfWatchersInPriorityQueue = 0;
 	private boolean watcherCanEnterBoolean = true;
 	private boolean buyerCanEnterBoolean = true;
-	private boolean prioritiequeueOpen = true;
+	private boolean priorityQueueOpen = true;
 	private final int  MAX_NUMBER_OF_BUYERS_IN_A_ROW = 4;
 	
 	
@@ -22,7 +22,7 @@ public class AutoRai {
 		lock = new ReentrantLock(true);
 		watcherCanEnter = lock.newCondition();
 		buyerCanEnter = lock.newCondition();
-		prioritiequeue = lock.newCondition();
+		priorityQueue = lock.newCondition();
 	}
 	
 	/**
@@ -31,20 +31,21 @@ public class AutoRai {
 	public void watcherWantsToGoIn(){
 		lock.lock();
 		try {
-			while(!prioritiequeueOpen){
-				prioritiequeue.await();
+			while(!priorityQueueOpen){
+				priorityQueue.await();
 			}
 			
-			numberOfWatchersInPrioritieQueue++;
+			numberOfWatchersInPriorityQueue++;
 			
 			while(!watcherCanEnterBoolean){
 				watcherCanEnter.await();
 			}
 			//watcher entered the room
-			numberOfWatchersInPrioritieQueue--;
+			numberOfWatchersInPriorityQueue--;
 			
 			buyerCanEnterBoolean = false;
 			numberOfWatchersInRoom++;
+			assert numberOfWatchersInRoom <= PLACE_IN_SHOWROOM: "there are to many watchers in the showroom";
 			numberOfBuyersInArow = 0;
 			System.out.println("watchers in room: "+numberOfWatchersInRoom);
 			if(numberOfWatchersInRoom == PLACE_IN_SHOWROOM){
@@ -70,7 +71,7 @@ public class AutoRai {
 		buyersWaiting++;
 		System.out.println(name + " wants to buy a car");
 		try {
-			if(prioritiequeueOpen){
+			if(priorityQueueOpen){
 				//prioritiequeu not in progress.
 				watcherCanEnterBoolean = false;
 			}
@@ -120,14 +121,14 @@ public class AutoRai {
 	 * checks who needs to be signaled
 	 */
 	private void signal(){
-		if(!prioritiequeueOpen){
+		if(!priorityQueueOpen){
 			//priority queue is still in progress.
-			if(numberOfWatchersInPrioritieQueue == 0 && numberOfWatchersInRoom ==0){
+			if(numberOfWatchersInPriorityQueue == 0 && numberOfWatchersInRoom ==0){
 				//everybody from the priority queue watched cars
 				System.out.println(">>priority queue is over");
-				prioritiequeueOpen = true; 
-				prioritiequeue.signalAll(); //for performance you can instead of signal all, 
-											//only signal PLACE_IN_SHOWROOM times.
+				priorityQueueOpen = true; 
+				priorityQueue.signalAll(); //for performance you can instead of signal all, 
+											//only signal PLACE_IN_SHOWROOM number of times.
 			} else if(numberOfWatchersInRoom < PLACE_IN_SHOWROOM){
 				watcherCanEnterBoolean = true; //new watcher from the priority queue can enter.
 				watcherCanEnter.signal();
@@ -137,16 +138,16 @@ public class AutoRai {
 			
 		}
 		if(buyersWaiting > 0){ // potentially a buyer needs to enter
-			if(numberOfBuyersInArow == MAX_NUMBER_OF_BUYERS_IN_A_ROW){
+			if(numberOfBuyersInArow >= MAX_NUMBER_OF_BUYERS_IN_A_ROW){
 				//maximum buyers in a row time for the priority queue
 				numberOfBuyersInArow =0;
-				if(numberOfWatchersInPrioritieQueue > 0){
+				if(numberOfWatchersInPriorityQueue > 0){
 					//there are people in the priority queue
 					System.out.println(">>time for the people in the priority queue!!");
-					prioritiequeueOpen = false;
+					priorityQueueOpen = false;
 					watcherCanEnterBoolean = true;
 					watcherCanEnter.signalAll(); 
-					//for performance you can instead of signal all, only signal PLACE_IN_SHOWROOM times.
+					//for performance you can instead of signal all, only signal PLACE_IN_SHOWROOM number of times.
 				} else {
 					//there are no people in the priority que another buyer can enter
 					System.out.println(">>prio queue not needed");
